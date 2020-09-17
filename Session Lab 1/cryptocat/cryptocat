@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+
+$key;
+$algorithm = 'aes-256-cbc';
+
+GetOptions ("listen" => \$listenMode,  # flag
+            "key=s"   => \$key,      # string
+            "algorithm=s"  => \$algorithm)   # string
+or die("Error in command line arguments\n");
+
+if ($listenMode) {
+	$port = $ARGV[0];
+	print("running in listen mode on port: $port \n");
+	print qx/nc -l -p $port | openssl enc -d -$algorithm -k $key -base64/;
+} else {
+	$host = $ARGV[0];
+	$port = $ARGV[1];
+	print("running in client mode, connecting to $host\n");
+	print("input message to send...\n");
+	$message = <STDIN>;
+	chomp $message;
+	qx/echo $message | openssl enc -$algorithm -k $key -base64 | nc $host $port/;
+}
+

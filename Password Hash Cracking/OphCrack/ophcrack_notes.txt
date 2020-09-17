@@ -1,0 +1,24 @@
+In order to retrieve hashes for password files we need to run in Ophcrack:
+
+ Local SAM with samdump2
+
+If using windows 10 anniversary samdump2 will not work or will provide hashes with empty passsword.
+
+In order to dump hashes in windows 10 Anniversary SAM, we need to rely on Mimikatz: https://github.com/gentilkiwi/mimikatz
+
+run as Administrator the following command:
+
+./mimikatz.exe privilege::debug token::elevate lsadump::sam
+
+this will show a message according to the one below.
+
+User : developer
+  Hash NTLM: 1937606ff74fb0e90c20ef11dc1c93bf
+  
+  
+let's load in ophcrack the hash we just found using the previous command.
+
+Install the vista_free rainbow table available here: http://ophcrack.sourceforge.net/tables.php
+  
+Proceed to crack the hash
+  

@@ -1,0 +1,35 @@
+Let's start with installing John The Ripper:
+
+apt-get install john
+
+After installing we may proceed to test and benchmark the tool:
+
+john --test
+
+let's take a look on what are the "passwd" and "shadow" files in linux...
+
+https://it.wikipedia.org/wiki/Shadow_(Unix)
+https://it.wikipedia.org/wiki/Passwd
+
+let's create a password file starting from the passwd and shadow file
+
+unshadow /etc/passwd /etc/shadow > mypasswd.txt 
+
+Now we may try to attack mypasswd.txt
+
+john mypasswd.txt
+
+John uses several attack modes, starting with single mode, then trying with wordlist mode Enumeration and finally with incremental modes. notes on modes usage are available at:
+https://www.openwall.com/john/doc/MODES.shtml
+
+we may build a dictionary in order to try thew wordlist mode.
+
+crunch 4 4 > list.txt
+
+now let's try the wordlist mode
+
+john --wordlist=list.txt mypasswd.txt
+
+to check the result of the command let's issue:
+
+john --show mypassword.txt

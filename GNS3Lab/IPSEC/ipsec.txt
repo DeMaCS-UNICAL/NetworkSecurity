@@ -1,0 +1,44 @@
+#host 10.1.0.130 - source machine
+
+
+# AH
+add 10.1.0.130 10.1.0.132 ah 15700 -A hmac-md5 "1234567890123456";
+add 10.1.0.132 10.1.0.130 ah 24500 -A hmac-md5 "1234567890123456";
+
+# ESP
+add 10.1.0.130 10.1.0.132 esp 15701 -E 3des-cbc "123456789012123456789012";
+add 10.1.0.132 10.1.0.130 esp 24501 -E 3des-cbc "123456789012123456789012";
+
+spdadd 10.1.0.132 10.1.0.130 any -P out ipsec
+           esp/transport//require
+           ah/transport//require;
+
+spdadd 10.1.0.130 10.1.0.132 any -P in ipsec
+           esp/transport//require
+           ah/transport//require;
+	  
+
+
+#host 10.1.0.132 destination machine
+#!/usr/sbin/setkey -f
+flush;
+spdflush;
+
+# AH
+add 10.1.0.130 10.1.0.132 ah 15700 -A hmac-md5 "1234567890123456";
+add 10.1.0.132 10.1.0.130 ah 24500 -A hmac-md5 "1234567890123456";
+
+# ESP
+add 10.1.0.130 10.1.0.132 esp 15701 -E 3des-cbc "123456789012123456789012";
+add 10.1.0.132 10.1.0.130 esp 24501 -E 3des-cbc "123456789012123456789012";
+
+
+spdadd 10.1.0.130 10.1.0.132 any -P out ipsec
+           esp/transport//require
+           ah/transport//require;
+
+spdadd 10.1.0.132 10.1.0.130 any -P in ipsec
+           esp/transport//require
+           ah/transport//require;
+
+#Try to ping now 10.1.0.130 and both connection are encrypted and authenticated

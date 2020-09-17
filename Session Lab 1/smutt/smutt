@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+GetOptions ("efilename=s" => \$efilename,  # string
+            "sfilename=s"   => \$sfilename)      # string
+or die("Error in command line arguments\n");
+
+print "type the name of the container file...\n";
+$cfilename = <STDIN>;
+chomp $cfilename;
+qx/steghide embed -cf $cfilename -ef $efilename -sf $sfilename /;
+
+$address = $ARGV[0];
+print "sending file to $address\n";
+qx/echo "here's your file..." | mutt -s file $address -a $sfilename/;
+
+
