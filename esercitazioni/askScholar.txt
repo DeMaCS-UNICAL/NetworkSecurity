@@ -1,0 +1,16 @@
+$query="";
+foreach $w (@ARGV){
+	$query.=$w."+";
+}
+`wget -U firefox -O result -q "https://scholar.google.com/scholar?hl=en&q=$query"`;
+open(FILE,"result");
+while(<FILE>){
+	if(/About (.*?) results/){
+		$resultNumber=$1;
+		if($resultNumber=~s/,//g){
+			print("$resultNumber\n");
+		}
+	}
+}
+close(FILE);
+`rm result`;

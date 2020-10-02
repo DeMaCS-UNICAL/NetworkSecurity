@@ -1,0 +1,55 @@
+
+CLIENT SIDE - CONFIGURAZIONE MANUALE TUNNEL SSH
+
+#Apre connessione SSH (10.0.0.2 = IP server SSH)
+   sudo ssh root@10.0.0.2 -w 0:0 
+
+#Configura IP tun0
+   sudo ifconfig tun0 10.0.0.132 pointopoint 10.0.0.131
+
+#Aggiunge route corrispondente alla sottorete in cui 10.0.0.132 viene inserito
+   sudo route add -net 10.0.0.128/25 gw 10.0.0.131
+
+
+CLIENT SIDE - CONFIGURAZIONE PERMANENTE
+
+#Crea una coppia di chiavi RSA con passphrase vuota.
+   ssh-keygen -f vpnloginkey -N ""
+
+#Copia tale chiave su server SSH (da effettuare PRIMA che la modalità di login con password venga disabilitata sul server)
+   ssh-copy-id -i ./vpnloginkey root@10.0.0.2
+
+#Provare se il login con chiave RSA funziona
+   ssh -i vpnloginkey root@10.0.0.2
+
+#Aggiungere a /etc/network/interfaces le righe
+-----
+   iface tun0 inet static
+        pre-up sleep 5
+        address 10.0.0.131
+        pointopoint 10.0.0.132
+        netmask 255.255.255.255 
+        up route add -net 10.0.0.128/25 gw 10.0.0.132
+-----
+
+#Creare lo script eseguibile loginvpn.sh contenente le righe
+   sudo ssh -NTCf -i vpnloginkey root@10.0.0.2 -w 0:0
+   sudo ifdown tun0
+   sudo ifup tun0
+
+#Le opzioni SSH viste sopra significano:
+
+ -N Indica che sulla riga di comando SSH non ci sono comandi da impartire al server 
+ (l'unico comando che sarà eseguito è quello predeterminato in /root/.ssh/authorized_keys sul server)
+
+ -T Indica che non è richiesta l'apertura di un terminale sulla macchina remota
+
+ -C attiva la compressione dati. In generale migliora le prestazioni
+
+ -f Il canale SSH resta aperto e il comando SSH si mette in background. 
+
+#Lanciare lo script... connessione effettuata. (si spera)
+
+#Terminare la connessione: 
+   sudo pkill -f vpnlogin
+

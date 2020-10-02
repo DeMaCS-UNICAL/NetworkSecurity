@@ -1,0 +1,6 @@
+# 
+# pc2 fa parte della sottorete 10.0.1.0/24, IP=10.0.1.2 
+#
+ifconfig eth0 10.0.1.2 netmask 255.255.255.0 broadcast 10.0.1.255 up
+route add default gw 10.0.1.1 dev eth0
+

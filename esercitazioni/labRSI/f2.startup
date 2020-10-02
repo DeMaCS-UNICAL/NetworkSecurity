@@ -1,0 +1,8 @@
+# Configurazione di f2 con due schede di rete. # eth0 rivolta sulla rete 10.0.0.0/25, IP=10.0.0.2, dominio di collisione A1
+# eth1 rivolta sulla rete 10.0.0.128/25, IP=10.0.0.129, dominio di collisione A3
+#
+ifconfig eth0 10.0.0.2 netmask 255.255.255.128 broadcast 10.0.0.127 up
+ifconfig eth1 10.0.0.129 netmask 255.255.255.128 broadcast 10.0.0.255 up
+route add default gw 10.0.0.1 dev eth0
+
+

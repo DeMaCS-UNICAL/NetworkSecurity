@@ -1,0 +1,8 @@
+# 
+# pc1 fa parte della sottorete 10.0.0.0/25, IP=10.0.0.3
+#
+ifconfig eth0 10.0.0.3 netmask 255.255.255.128 broadcast 10.0.0.127 up
+route add default gw 10.0.0.1 dev eth0
+route add -net 10.0.0.128/25 gw 10.0.0.2 dev eth0
+
+

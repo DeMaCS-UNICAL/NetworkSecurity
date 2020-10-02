@@ -1,0 +1,11 @@
+Il laboratorio contiene un file start che si occupa nell'ordine di:
+
+1. avviare il laboratorio (invocando il comando di netkit lstart)
+2. configurare sull'host reale l'interfaccia nk_tap_user ed la route verso il laboratorio. Ciò è necessario per rendere visibile all'esterno l'intero laboratorio. 
+
+Perciò, è necessario modificare opportunamente il nome dell'interfaccia nk_tap_user, sostituendo "user" con il nome utente corretto.
+Fatto ciò, è sufficiente eseguire il file start per l'avvio del laboratorio virtuale.
+
+
+
+

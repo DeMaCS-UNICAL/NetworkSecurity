@@ -1,0 +1,85 @@
+
+SERVER SIDE - CREAZIONE DI UN TUNNEL VPN SSH. PROCEDURA MANUALE.
+
+SERVER SIDE 1:
+
+# Avviare manualmente il server SSH
+   /etc/init.d/ssh start
+# Verificare che la porta 22 sia in ascolto
+   netstat -tpl
+# Assicurarsi che la password di root sia impostata
+   passwd
+# Per verificare cosa succede con le connessioni in ingresso si può monitorare /var/log/auth.log
+   tail -f /var/log/auth.log 
+# Abilitare il tunneling nel file di configurazione SSH (aggiungere il rigo 'PermitTunnel yes', o modificarlo, se esistente)
+   pico /etc/ssh/sshd_config 
+# Riavviare il server SSH
+   /etc/init.d/ssh restart
+
+------ PASSARE A CLIENT SIDE.
+
+SERVER SIDE 2:
+
+#Nel momento in cui un client è connesso elencare tutte le interfacce, sia UP che DOWN. 
+#Verificare la presenza del dispositivo tun corrispondente.
+   ifconfig -a
+
+#Configurazione manuale del dispositivo tun0
+   ifconfig tun0 10.0.0.132 pointopoint 10.0.0.131 up
+
+#Verifica che l'altra estremita del tunnel sia raggiungibile
+   ping 10.0.0.131
+
+#Aggiunta di voce ARP pubblica su eth1
+   arp -sD 10.0.0.131 eth1 pub
+
+#Verifica della tabella ARP
+   arp -a
+
+
+SERVER SIDE - SSH Tunnel: CONFIGURAZIONE PERMANENTE.
+
+SERVER SIDE 1:
+
+#Rendere permanente l'avvio del server SSH
+   ln -s /etc/init.d/ssh /etc/rcS.d/S42ssh
+
+#Verifica che SSH compaia tra i servizi che partono all'avvio
+   ls -l /etc/rcS.d/ | less
+
+------ Passare a CLIENT SIDE 1.
+
+SERVER SIDE 2:
+
+#Elencare le chiavi pubbliche corrispondenti a utenti che possono fare login
+   cat /root/.ssh/authorized_keys 
+
+#Aggiungere in testa al rigo corrispondente alla chiave client appena aggiunta la voce:
+   command="ifdown tun0; ifup tun0",no-port-forwarding,no-X11-forwarding,no-agent-forwarding
+
+#Assicurarsi che le directory /root e /root/.ssh abbiano i permessi corretti
+   chown -R root /root
+   chmod go-r /root/.ssh
+
+# Configurare tun0
+   pico /etc/network/interfaces 
+
+#Aggiungere al file 'interfaces' di cui sopra le righe
+
+   iface tun0 inet static
+        pre-up sleep 5
+        address 10.0.0.132
+        pointopoint 10.0.0.131
+        netmask 255.255.255.255
+        up arp -sD 10.0.0.131 eth1 pub
+
+#Se presente cambiare i diritti del file specificato sotto (si tratta di un servizio 
+#che fatica a rispondere quando un interfaccia va down, prevenendo la 
+#terminazione del comando 'ifdown tun0')
+   chmod -x /etc/network/if-pre-up.d/bind9
+
+#Aggiornare la direttiva PermitRootLogin in /etc/ssh/sshd_config al valore 'without-password'. 
+
+#Riavviare il server ssh.
+
+ 

@@ -1,0 +1,17 @@
+open(FILE,"$ARGV[0]") or die "Insert file name";
+while(<FILE>){
+	chomp $_;
+	`perl askScol1.pl $_ > result_query`;
+	open(FILE_RESULT,"result_query");
+	$resultNumber=<FILE_RESULT>;
+	chomp $resultNumber;
+	$query_result{$_}=$resultNumber;
+	close(FILE_RESULT);
+	`rm result_query`;
+}
+close(FILE);
+open(FILE,">$ARGV[0]");
+foreach $k (sort {$query_result{$b} <=> $query_result{$a}} keys %query_result){
+	print FILE "$k $query_result{$k}\n";
+}
+close(FILE);

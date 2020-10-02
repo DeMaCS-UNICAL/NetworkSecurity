@@ -1,0 +1,83 @@
+
+SERVER SIDE - CREATING AND SETTING UP A MANUAL SSH TUNNEL
+
+SERVER SIDE 1:
+
+# Manually start the SSH server
+   /etc/init.d/ssh start
+# Verify that port 22 is listening
+   netstat -tpln
+# Ensure that the root password is set
+   passwd
+# To check what happens with incoming connections you can monitor /var/log/auth.log
+   tail -f /var/log/auth.log
+#  Enable SSH tunneling in the configuration file (add the line 'PermitTunnel yes' or modify it, if any)
+   pico /etc/ssh/sshd_config
+# Restart the SSH server
+   /etc/init.d/ssh restart
+
+------ GO TO CLIENT SIDE.
+
+SERVER SIDE 2:
+
+#Check the presence the corresponding tun device.
+   ifconfig -a
+
+#Setting up a manual ifconfig tun0 10.0.0.132 pointopoint
+10.0.0.131 up tun0 device
+
+
+#Verify that the other end of the tunnel is reachable
+   ping 10.0.0.131
+
+#Adding ARP public entry on eth1
+   arp -sD 10.1.0.132 eth1 pub
+
+#Check the ARP table
+   arp -a
+
+
+SERVER SIDE - SETTING UP A PERMANENT SSH TUNNEL
+
+SERVER SIDE 1:
+
+# Making permanent the start of the SSH server
+   ln -s /etc/init.d/ssh /etc/rcS.d/S42ssh
+
+# Verify that SSH appears in startup services
+   ls -l /etc/rcS.d/ | less
+
+------ Go to  CLIENT SIDE 1.
+
+SERVER SIDE 2:
+
+# List the public keys corresponding to users who are authorized to sign
+   cat /root/.ssh/authorized_keys
+
+# Add on top of the line corresponding to the client key just added
+this line:
+   command="ifdown tun0; ifup tun0",no-port-forwarding,no-X11-forwarding,no-agent-forwarding
+
+# Ensure that the directory /root and /root/.ssh have correct permissions
+   chown -R root /root
+   chmod go-r /root/.ssh
+
+# Setting up tun0
+   pico /etc/network/interfaces
+
+# Add to the 'interfaces' file the above lines:
+
+   iface tun0 inet static
+        pre-up sleep 5
+        address 10.0.0.132
+        pointopoint 10.0.0.131
+        netmask 255.255.255.255
+        up arp -sD 10.0.0.131 eth1 pub
+
+#If any, change the file permissions specified below (bind9 is a service
+#which does not respond when an interface goes down, preventing the
+#termination of the 'ifdown tun0' command)
+   chmod -x /etc/network/if-pre-up.d/bind9
+
+#Update the directive PermitRootLogin in /etc/ssh/sshd_config to the value 'without-password'.
+#Restart the SSH server.

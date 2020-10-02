@@ -1,0 +1,19 @@
+auto eth2
+iface eth2 inet static
+	address 10.0.1.1
+	netmask 255.255.255.0
+
+auto eth1
+iface eth1 inet static
+	address 10.0.0.1
+	netmask 255.255.255.128
+	up route add -net 10.0.0.128/25 gw 10.0.0.2 dev eth1
+
+
+auto eth0
+iface eth0 inet static
+	address 10.0.3.2
+	netmask 255.255.255.0
+	up route add default gw 10.0.3.1 dev eth0
+
+

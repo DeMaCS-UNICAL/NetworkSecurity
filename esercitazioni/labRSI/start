@@ -1,0 +1,4 @@
+lstart
+sudo ifconfig nk_tap_user 10.0.3.1 netmask 255.255.255.0 broadcast 10.0.3.25 up
+sudo route add -net 10.0.0.0/23 gw 10.0.3.2 dev nk_tap_user
+
