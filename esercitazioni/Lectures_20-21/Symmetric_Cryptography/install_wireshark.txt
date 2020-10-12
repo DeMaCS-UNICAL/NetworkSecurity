@@ -1,0 +1,5 @@
+sudo apt update
+sudo apt install wireshark
+	- when prompted select yes on "Configure Wireshark Common" to enable non super-user capture
+sudo usermod -aG wireshark (whoami)
+sudo reboot
