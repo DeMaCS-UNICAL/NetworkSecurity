@@ -1,0 +1,5 @@
+set sendmail="/usr/bin/msmtp"
+set use_from=yes
+set realname="<your_real_name>"
+set from=<your_email_address>
+set envelope_from=yes
