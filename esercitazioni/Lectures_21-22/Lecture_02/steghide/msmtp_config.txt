@@ -1,0 +1,19 @@
+defaults
+auth           on
+tls            on
+tls_starttls   on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+aliases        /etc/aliases
+
+# Esempio per GMAIL
+account        gmail
+auth           plain
+host           smtp.gmail.com
+port           587
+from           sender_name
+user           user_address
+password       xxxxxxxxxxxxxxxx
+
+# Definizione dell'account di default
+account default : gmail
