@@ -1,0 +1,13 @@
+Install and configure msmtp:
+- $sudo apt -y install msmtp
+- $sudo apt -y install ca-certificates
+- create file msmtprc and paste content of file default_configuration_msmtp
+	- adapt file changing fields:
+		- from
+		- user
+		- password
+- $sudo mv msmtprc /etc/
+- $sudo apt -y install mutt
+	- config mutt
+		- $sudo nano ~/.muttrc
+			- paste the content of config_mutt.txt, properly modified with our data, into nano then save
