@@ -60,11 +60,11 @@ $ sudo usermod -aG ubridge,libvirt,kvm $(whoami) # Log out and log in back to ap
 
 Below are the images of the initial GNS3 configuration. Follow the steps shown in the images to set it up correctly.
 
-![GNS3_FirstStartConfig_00](../../img/gns-setup-00.png)
-![GNS3_FirstStartConfig_01](../../img/gns-setup-01.png)
-![GNS3_FirstStartConfig_02](../../img/gns-setup-02.png)
-![GNS3_FirstStartConfig_03](../../img/gns-setup-03.png)
-![GNS3_FirstStartConfig_04](../../img/gns-setup-04.png)
+![GNS3_FirstStartConfig_00](../img/gns-setup-00.png)
+![GNS3_FirstStartConfig_01](../img/gns-setup-01.png)
+![GNS3_FirstStartConfig_02](../img/gns-setup-02.png)
+![GNS3_FirstStartConfig_03](../img/gns-setup-03.png)
+![GNS3_FirstStartConfig_04](../img/gns-setup-04.png)
 
 ## Template creation
 
@@ -78,41 +78,41 @@ The templates we will create are:
 
 ### Switch: Cisco C3745
 
-- ![alt text](../../img/template_00.png)
-- ![alt text](../../img/template_01.png)
-- ![alt text](../../img/template_02.png)
-- ![alt text](../../img/template_03.png)
-- ![alt text](../../img/template_04.png)
-- ![alt text](../../img/template_05.png)
-- ![alt text](../../img/template_06.png)
-- ![alt text](../../img/template_07.png)
-- ![alt text](../../img/template_08.png)
-- ![alt text](../../img/template_09.png)
-- ![alt text](../../img/template_10.png)
-- ![alt text](../../img/template_11.png)
-- ![alt text](../../img/template_12.png)
-- ![alt text](../../img/template_13.png)
+- ![alt text](../img/template_00.png)
+- ![alt text](../img/template_01.png)
+- ![alt text](../img/template_02.png)
+- ![alt text](../img/template_03.png)
+- ![alt text](../img/template_04.png)
+- ![alt text](../img/template_05.png)
+- ![alt text](../img/template_06.png)
+- ![alt text](../img/template_07.png)
+- ![alt text](../img/template_08.png)
+- ![alt text](../img/template_09.png)
+- ![alt text](../img/template_10.png)
+- ![alt text](../img/template_11.png)
+- ![alt text](../img/template_12.png)
+- ![alt text](../img/template_13.png)
 
 Now that the template is created, we need to make a few customizations.
 
 1. Open the configuration panel by right-clicking on the template and selecting **"Configure Template"**.
 
-   ![alt text](../../img/template_14.png)
+   ![alt text](../img/template_14.png)
 
 2. Navigate to the **Slot** tab in the C3745 configuration panel and ensure your entries match the image below.
 
-   ![alt text](../../img/template_15.png)
+   ![alt text](../img/template_15.png)
 
 3. The device we just installed is a router. However, since we will be using it as a switch, and to avoid confusion with the C7200 device (which will serve as a router), I recommend modifying the template as shown below:
 
-   ![alt text](../../img/template_16.png)
+   ![alt text](../img/template_16.png)
 
 4. The final step before the switch can be used correctly is linking the appropriate configuration file.
 
    - Download the file **[c3745_startup-config.cfg]()** and set it in the **General** tab of the template configuration.
    - This configuration file does not depend on the host machine, so you likely won’t need to make any changes.
 
-   ![alt text](../../img/template_17.png)
+   ![alt text](../img/template_17.png)
 
 ### **TIPS:**
 
@@ -123,30 +123,30 @@ When connecting this device to others in your topology, follow these guidelines:
 
 ### Router: Cisco C7200
 
-- ![alt text](../../img/template_18.png)
-- ![alt text](../../img/template_19.png)
-- ![alt text](../../img/template_20.png)
-- ![alt text](../../img/template_21.png)
-- ![alt text](../../img/template_22.png)
-- ![alt text](../../img/template_23.png)
-- ![alt text](../../img/template_24.png)
-- ![alt text](../../img/template_25.png)
-- ![alt text](../../img/template_26.png)
-- ![alt text](../../img/template_27.png)
+- ![alt text](../img/template_18.png)
+- ![alt text](../img/template_19.png)
+- ![alt text](../img/template_20.png)
+- ![alt text](../img/template_21.png)
+- ![alt text](../img/template_22.png)
+- ![alt text](../img/template_23.png)
+- ![alt text](../img/template_24.png)
+- ![alt text](../img/template_25.png)
+- ![alt text](../img/template_26.png)
+- ![alt text](../img/template_27.png)
 
 Make sure to adjust your slot setup according to the image below:
 
-- ![alt text](../../img/template_28.png)
+- ![alt text](../img/template_28.png)
 
 The final step before the switch can function correctly is to link the appropriate configuration file.
 
 - Download **[c7200_startup-config.cfg]()** and set it in the **General** tab of the template configuration.
 
-- ![alt text](../../img/template_29.png)
+- ![alt text](../img/template_29.png)
 
 If you have already configured the external connection, you can test it by pinging an external resource, such as Google DNS.
 
-- ![alt text](../../img/template_30.png)
+- ![alt text](../img/template_30.png)
 
 ### **TIPS:**
 
@@ -156,11 +156,11 @@ Pay close attention to the IP address and routing rules in the configuration fil
 
 For this virtual machine you need a virtual machine management system (a hypervisor). The most well-known opensource is definitely virtualbox. Over the years we have noticed that virtualbox has quite a few compatibility problems with GNS3 (e.g. projects that have stopped working out of nowhere). I strongly recommend using qemu instead of virtualbox, which has proven to be more stable.
 
-- ![alt text](../../img/ubuntu_01.png)
-- ![alt text](../../img/ubuntu_02.png)
-- ![alt text](../../img/ubuntu_03.png)
-- ![alt text](../../img/ubuntu_04.png)
-- ![alt text](../../img/ubuntu_05.png)
+- ![alt text](../img/ubuntu_01.png)
+- ![alt text](../img/ubuntu_02.png)
+- ![alt text](../img/ubuntu_03.png)
+- ![alt text](../img/ubuntu_04.png)
+- ![alt text](../img/ubuntu_05.png)
 
 #### Network setup
 
@@ -206,8 +206,8 @@ $ sudo netplan apply
 
 In order to connect to external you need to use a special interface "Cloud1".
 
-![](../../img/image-5.png)
-![](../../img/image-6.png)
+![](../img/image-5.png)
+![](../img/image-6.png)
 
 If you don't see `virbr0` need to install it with:
 
@@ -255,7 +255,7 @@ $ sudo iptables -A FORWARD -i virbr0 -o enp4s0 -j ACCEPT
 
 If you have followed all the previous steps correctly, you should now be able to create an example project like this:
 
-![](../../img/toys.png)
+![](../img/toys.png)
 
 ### **Components in this topology:**
 
