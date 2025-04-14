@@ -186,26 +186,3 @@ except KeyboardInterrupt:
 ```
 
 
-### Note sull'ip spoofing in combinazione con l'arp poisoning
-
-- ARP Poisoning: modifica il percorso dei pacchetti nella rete (chi riceve cosa)
-- IP Spoofing: modifica l'apparente origine dei pacchetti (chi sembra inviare cosa)
-
-- L'ARP poisoning risolve il principale problema dell'IP spoofing: ricevere le risposte perche' normalmente con il solo IP spoofing, le risposte andrebbero all'IP falsificato. Ma avendo il controllo del percorso dei pacchetti, l'attaccante può vedere anche le risposte
-- Prima esegui l'ARP poisoning con Ettercap per metterti in posizione man-in-the-middle
-- Poi esegui lo script Python che genera pacchetti TCP SYN con indirizzo IP sorgente falsificato
-
-# Sintassi Ettercap
-
-| Sintassi | Significato | Effetto dell'ARP Poisoning | Note |
-|----------|-------------|----------------------------|------|
-| `/IP1// /IP2//` | Target 1: IP1<br>Target 2: IP2 | Intercetta solo il traffico tra IP1 e IP2 | Ideale per attacchi mirati tra due host specifici |
-| `/IP1// ///` | Target 1: IP1<br>Target 2: tutti | Intercetta tutto il traffico da/verso IP1 | Utile per monitorare un singolo host |
-| `/// ///` | Target 1: tutti<br>Target 2: tutti | Intercetta tutto il traffico della rete | Può generare molto traffico e essere più facilmente rilevabile |
-| `//IP1/` | Target 1: vuoto<br>Target 2: IP1 | Intercetta il traffico tra qualsiasi host e IP1 | Equivalente a `//// /IP1//` |
-| `/IP1//` | Target 1: IP1<br>Target 2: vuoto | Intercetta il traffico tra IP1 e qualsiasi host | Equivalente a `/IP1// ///` |
-| `/IP1/MAC1/` | Target 1: IP1 con MAC1<br>Target 2: vuoto | Specifica anche l'indirizzo MAC | Utile quando ci sono problemi di risoluzione ARP |
-| `/IP1//PORT1/` | Target 1: IP1 sulla porta PORT1<br>Target 2: vuoto | Filtra per porta specifica | Limita l'intercettazione a un servizio specifico |
-| `/10.0.0.0/24//` | Target 1: tutta la subnet<br>Target 2: vuoto | Intercetta il traffico da/verso la subnet | Si possono usare notazioni CIDR per le subnet |
-| `/IP1// /IP2-IP3//` | Target 1: IP1<br>Target 2: range di IP | Intercetta il traffico tra IP1 e qualsiasi IP nel range | Si possono specificare range di indirizzi |
-
