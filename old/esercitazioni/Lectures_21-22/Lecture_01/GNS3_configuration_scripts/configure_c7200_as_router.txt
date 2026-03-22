@@ -1,0 +1,56 @@
+############## ENABLING INTERFACES #############
+configure terminal
+interface range fastEthernet 0/0 - 1
+no shutdown
+end
+
+############ CONFIGURE INTERFACES #############
+configure terminal
+interface fastEthernet 0/0
+ip address 192.168.122.2 255.255.255.0
+end
+
+configure terminal
+interface fastEthernet 0/1
+ip address 10.0.0.1 255.255.255.0
+end
+
+############## DHCP CONFIGURATION ###############
+configure terminal
+ip dhcp excluded-address 10.0.0.1
+ip dhcp pool LAN
+network 10.0.0.0 255.255.255.0
+default-router 10.0.0.1
+dns-server 8.8.8.8
+end
+
+configure terminal 
+service dhcp
+end
+
+############### NAT CONFIGURATION ################
+configure terminal
+interface fastEthernet 0/0
+ip nat outside
+end
+
+configure terminal 
+interface fastEthernet 0/1
+ip nat inside
+end
+
+configure terminal
+ip nat inside source list 1 interface fastEthernet 0/0 overload
+access-list 1 permit 192.168.122.0 0.0.0.255
+access-list 1 permit 10.0.0.0 0.0.0.255
+end
+
+############ ROUTE TO INTERNET ##############
+config terminal
+ip route 0.0.0.0 0.0.0.0 192.168.122.1
+ip route 192.168.122.0 255.255.255.0 10.0.0.0
+end
+
+
+## SAVE MODIFICATIONS ##
+copy running-config startup-config

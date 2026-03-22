@@ -1,0 +1,18 @@
+# Configurazione di f1 con tre schede di rete. 
+# eth0 rivolta sulla rete 10.0.3.0/24, IP=10.0.3.2, dominio tap
+# eth1 rivolta sulla rete 10.0.0.0/25, IP=10.0.0.1, dominio di collisione A1
+# eth2 rivolta sulla rete 10.0.1.0/24, IP=10.0.1.1, dominio di collisione A2
+#
+# La configurazione manuale della scheda eth0 (su tap) si rende necessaria per modificare la netmask, 
+# infatti nella configurazione automatica di netkit verrebbe utilizzata una maschera di 8 bit.
+#
+ifconfig eth0 10.0.3.2 netmask 255.255.255.0 broadcast 10.0.3.255 up
+ifconfig eth1 10.0.0.1 netmask 255.255.255.128 broadcast 10.0.0.127  up
+ifconfig eth2 10.0.1.1 netmask 255.255.255.0 broadcast 10.0.1.255 up
+
+route add -net 10.0.0.128/25 gw 10.0.0.2 dev eth1
+route add default gw 10.0.3.1 dev eth0
+
+
+
+
