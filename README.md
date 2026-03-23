@@ -4,7 +4,7 @@ Public repository containing study material for the course Network And Security 
 
 ## Repository Structure
 
-- **`lab/`** — Current edition (AA 2025-2026) of the lab exercises. This folder contains the up-to-date course material and will be updated session by session throughout the course.
+- **`lab/`** — Current edition (AY 2025-2026) of the lab exercises. This folder contains the up-to-date course material and will be updated session by session throughout the course.
 - **`old/`** — Archive of past editions of the course material.
 - **`site_media/`** — Files linked from the course website.
 - **`slides/`** — Theory slides for each lecture.
