@@ -381,6 +381,15 @@ Login with `pi` / `raspberry`.
 
 Raspbian uses classic Debian networking — not Netplan.
 
+**Stop the DHCP client first** — otherwise it will overwrite the static configuration:
+
+```bash
+sudo systemctl stop dhcpcd
+sudo systemctl disable dhcpcd
+```
+
+Edit the interfaces file:
+
 ```bash
 sudo nano /etc/network/interfaces
 ```
@@ -393,6 +402,14 @@ iface eth0 inet static
     address 10.0.0.30
     netmask 255.255.255.0
     gateway 10.0.0.1
+```
+
+Bring the interface up manually (required after editing — `networking restart` alone is not always enough):
+
+```bash
+sudo ip link set eth0 up
+sudo ip addr add 10.0.0.30/24 dev eth0
+sudo ip route add default via 10.0.0.1
 ```
 
 Set DNS and lock the file so it is not overwritten by dhclient or resolvconf:
@@ -408,8 +425,12 @@ Apply and verify:
 ```bash
 sudo systemctl restart networking
 ip addr show eth0
+ip route show
+ping -c 3 10.0.0.1
 cat /etc/resolv.conf
 ```
+
+> If `ping 10.0.0.1` still fails after this: check `ip link show eth0` — the interface must show `state UP`. If it shows `DOWN`, run `sudo ip link set eth0 up` again and retry.
 
 ---
 

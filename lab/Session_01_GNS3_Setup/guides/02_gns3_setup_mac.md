@@ -176,7 +176,7 @@ macOS does not have `virbr0` or `libvirt`. NAT is set up manually with a virtual
 
 > These settings are lost on reboot — rerun this block every time before opening GNS3.
 
-**1. Create a virtual bridge** (any number >= 2 — bridge0 is reserved by the system):
+**1. Create a virtual bridge** (any number ≥ 2 — bridge0 is reserved by the system):
 
 ```bash
 sudo ifconfig bridge9 create
