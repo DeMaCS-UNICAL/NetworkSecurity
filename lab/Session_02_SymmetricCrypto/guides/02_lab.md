@@ -30,7 +30,8 @@ If either ping fails, fix the network before proceeding.
 
 ```bash
 sudo apt update
-sudo apt install -y netcat-openbsd tshark steghide python3-pycryptodome
+sudo apt install -y netcat-openbsd tshark steghide python3-pip
+pip3 install pycryptodome --break-system-packages
 ```
 
 **Install on Darth**:
@@ -193,7 +194,13 @@ cat received.txt
 On **Darth**, start capturing traffic on port 5000 **before** Alice sends anything:
 
 ```bash
-sudo tshark -i eth0 -Y "tcp.port == 5000" -T fields -e data 2>/dev/null
+sudo tshark -i eth0 -f "tcp port 5000" -w /tmp/capture.pcap
+```
+
+When Alice has finished sending (Ctrl-C to stop capture), read the payload:
+
+```bash
+sudo tshark -r /tmp/capture.pcap -T fields -e data 2>/dev/null | xxd -r -p
 ```
 
 > If `eth0` is wrong, check the interface name with `ip link show` and substitute accordingly. Common alternatives: `ens3`, `enp0s3`.
@@ -235,7 +242,7 @@ Before you start: **in a plaintext netcat session, what can Darth learn? In an e
 On **Darth**, start capturing on port 9999:
 
 ```bash
-sudo tshark -i eth0 -Y "tcp.port == 9999" -T fields -e data 2>/dev/null
+sudo tshark -i eth0 -f "tcp port 9999" -w /tmp/capture.pcap
 ```
 
 On **Bob**, listen with plain netcat:
@@ -250,11 +257,15 @@ On **Alice**, connect with plain netcat:
 nc 10.0.0.20 9999
 ```
 
-Type a message on Alice (e.g. `Hello Bob, this is our secret`). Press Enter.
+Type a message on Alice (e.g. `Hello Bob, this is our secret`). Press Enter. Then stop all connections (Ctrl-C on Alice, Bob, and Darth).
 
-**Checkpoint**: Darth sees the message in clear text in his terminal. This is how the internet looked before HTTPS.
+On **Darth**, read the captured payload:
 
-Stop all connections (Ctrl-C on Alice, Bob, and Darth).
+```bash
+sudo tshark -r /tmp/capture.pcap -T fields -e data 2>/dev/null | xxd -r -p
+```
+
+**Checkpoint**: Darth sees the message in clear text. This is how the internet looked before HTTPS.
 
 ---
 
@@ -278,24 +289,30 @@ Once it works, run it on the two machines.
 On **Bob** (server):
 
 ```bash
-python3 cryptocat_blank.py 0.0.0.0 9999 --mode server --key mysecretkey
+python3 cryptocat.py 0.0.0.0 9999 -m server -k mysecretkey
 ```
 
 On **Alice** (client):
 
 ```bash
-python3 cryptocat_blank.py 10.0.0.20 9999 --mode client --key mysecretkey
+python3 cryptocat.py 10.0.0.20 9999 -m client -k mysecretkey
 ```
 
 On **Darth**, capture again:
 
 ```bash
-sudo tshark -i eth0 -Y "tcp.port == 9999" -T fields -e data 2>/dev/null
+sudo tshark -i eth0 -f "tcp port 9999" -w /tmp/capture.pcap
 ```
 
-Type a message on Alice. Bob receives it decrypted and printed.
+Type a message on Alice. Bob receives it decrypted and printed. Then stop Darth's capture (Ctrl-C).
 
-**Checkpoint**: Darth sees only base64-encoded ciphertext. The message content is completely opaque.
+On **Darth**, read the captured payload:
+
+```bash
+sudo tshark -r /tmp/capture.pcap -T fields -e data 2>/dev/null | xxd -r -p
+```
+
+**Checkpoint**: Darth sees only ciphertext — the message content is completely opaque.
 
 Type a few messages in both directions (Alice → Bob and Bob → Alice). Confirm that Darth sees nothing readable.
 
@@ -391,17 +408,31 @@ ls -lh cover.jpg stego.jpg
 
 ### 3c — Send the image to Bob and extract
 
+On **Darth**, start capturing **before** Alice sends:
+
+```bash
+sudo tshark -i eth0 -f "tcp port 5000" -w /tmp/capture_stego.pcap
+```
+
 On **Bob**, receive the image:
 
 ```bash
-nc -N -l -p 5000 > stego.jpg
+nc -l -p 5000 > stego.jpg
 ```
 
 On **Alice**, send it:
 
 ```bash
-nc 10.0.0.20 5000 < stego.jpg
+nc -N 10.0.0.20 5000 < stego.jpg
 ```
+
+Stop Darth's capture (Ctrl-C). On **Darth**, extract what was intercepted as an image:
+
+```bash
+sudo tshark -r /tmp/capture_stego.pcap -T fields -e data 2>/dev/null | xxd -r -p > /tmp/darth_intercepted.jpg
+```
+
+Open `/tmp/darth_intercepted.jpg`. It looks like an ordinary JPEG. Darth has no reason to suspect anything is hidden inside.
 
 On **Bob**, extract the hidden message:
 
@@ -410,7 +441,7 @@ steghide extract -sf stego.jpg -p stegosecret
 cat secret.txt
 ```
 
-**Checkpoint**: Bob reads `The package is under the third bench in the park.` From the network's perspective, Alice just sent Bob a JPEG — nothing suspicious.
+**Checkpoint**: Bob reads `The package is under the third bench in the park.` Darth intercepted the same image and saw nothing suspicious — that is the point of steganography.
 
 ---
 
@@ -554,10 +585,10 @@ Check the interface name:
 ip link show
 ```
 
-On GNS3 VMs the interface is usually `ens3` or `eth0`. Replace in the tshark command:
+On GNS3 VMs the interface is usually `ens3` or `eth0`. Replace in the capture command:
 
 ```bash
-sudo tshark -i ens3 -Y "tcp.port == 5000" -T fields -e data 2>/dev/null
+sudo tshark -i ens3 -f "tcp port 5000" -w /tmp/capture.pcap
 ```
 
 ### `steghide embed` fails: cover file format error
@@ -582,12 +613,11 @@ mv cover_real.jpg cover.jpg
 python3 -c "from Crypto.Cipher import AES; print('ok')"
 ```
 
-If it fails:
+If it fails, the apt package installs under a different namespace and does not work. Use pip:
 
 ```bash
-sudo apt install python3-pycryptodome
-# or if the apt package is missing:
-pip3 install pycryptodome
+sudo apt install -y python3-pip
+pip3 install pycryptodome --break-system-packages
 ```
 
 ### netcat: connection refused
