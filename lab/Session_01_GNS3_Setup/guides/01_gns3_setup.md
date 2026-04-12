@@ -1,8 +1,5 @@
 # Session 01 — GNS3 Lab Setup (Ubuntu)
 
-**Duration**: ~2 hours
-**OS**: Ubuntu 25.10
-
 **Credentials summary** (keep handy):
 
 | Machine        | Username | Password          |
@@ -106,7 +103,7 @@ sudo sysctl -w net.ipv4.ip_forward=1
 > echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 > ```
 
-> **Note**: a convenience script that runs all of Step 2 in one command will be published on the course GitHub repository at the end of the session.
+> A convenience script that runs all of Step 2 in one command is available in the lab folder: `gns3-nat-ubuntu.sh`. Run it with `sudo bash gns3-nat-ubuntu.sh`.
 
 ---
 
@@ -299,6 +296,14 @@ IP addresses:
 
 Login with `ubuntu` / `ubuntu`.
 
+First, find your network interface name — it is usually `ens3` on GNS3 VMs, but may differ:
+
+```bash
+ip link show
+```
+
+Look for an interface that is not `lo` (loopback). Use that name in place of `ens3` in the steps below.
+
 ```bash
 sudo nano /etc/netplan/00-lab.yaml
 ```
@@ -326,7 +331,6 @@ For **Bob** (`10.0.0.20`): same file, change address to `10.0.0.20/24`.
 Apply on each:
 
 ```bash
-sudo chmod 600 /etc/netplan/00-lab.yaml
 sudo rm /etc/netplan/50-cloud-init.yaml
 sudo netplan apply
 ip addr show ens3

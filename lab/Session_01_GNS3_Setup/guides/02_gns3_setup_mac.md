@@ -1,7 +1,5 @@
 # Session 01 — GNS3 Installation (macOS)
 
-**OS**: macOS (Apple Silicon — M1/M2/M3/M4/M5)
-
 > This guide covers **only the macOS-specific installation of GNS3**.
 > Once GNS3 is running, follow the Ubuntu guide (`01_gns3_setup.md`)
 > from **Step 3** onward for everything else: first launch, templates, topology, network config, and verification.
@@ -172,54 +170,89 @@ Go to **Edit → Preferences → General → Console applications** and set:
 
 ## Step 8 — Configure NAT (internet access for the lab)
 
-macOS does not have `virbr0` or `libvirt`. NAT is set up manually with a virtual bridge and `pfctl`.
+macOS does not have `virbr0` or `libvirt`. The equivalent is built manually using a
+virtual bridge (`bridge9`), a **fake ethernet pair** (`feth0`/`feth1` — the macOS
+equivalent of Linux `veth`), and `pfctl` for NAT.
 
-> These settings are lost on reboot — rerun this block every time before opening GNS3.
+> These settings are **not persistent** — they are lost on reboot. Run the
+> `start_nat_mac.sh` script every time before opening GNS3.
 
-**1. Create a virtual bridge** (any number ≥ 2 — bridge0 is reserved by the system):
-
-```bash
-sudo ifconfig bridge9 create
-sudo ifconfig bridge9 192.168.122.1 netmask 255.255.255.0 up
-```
-
-**2. Create a virtual ethernet pair and attach it to the bridge:**
+**1. Create the fake ethernet pair and attach it to the bridge:**
 
 ```bash
-sudo ifconfig feth0 create
-sudo ifconfig feth1 create
-sudo ifconfig feth0 peer feth1
+sudo ifconfig feth0 create 2>/dev/null || true
+sudo ifconfig feth1 create 2>/dev/null || true
+sudo ifconfig feth0 peer feth1 2>/dev/null || true   # "Resource busy" on re-run is fine
 sudo ifconfig feth0 up
-sudo ifconfig feth1 up
-sudo ifconfig bridge9 addm feth0
-sudo ifconfig bridge9 up
+# feth1 needs a dummy IP — GNS3 refuses interfaces without a netmask
+sudo ifconfig feth1 192.168.122.254 netmask 255.255.255.0 up
 ```
 
-**3. Enable IP forwarding:**
+**2. Create the bridge, assign it the gateway IP, and add feth0 as member:**
+
+```bash
+sudo ifconfig bridge9 create 2>/dev/null || true
+sudo ifconfig bridge9 192.168.122.1 netmask 255.255.255.0 up
+sudo ifconfig bridge9 addm feth0 2>/dev/null || true   # already a member on re-run is fine
+```
+
+Verify the bridge is active:
+
+```bash
+ifconfig bridge9 | grep status
+# Expected: status: active
+```
+
+**3. Fix the route so it points to bridge9 (not feth1):**
+
+```bash
+sudo route delete -net 192.168.122.0/24 2>/dev/null || true
+sudo route add -net 192.168.122.0/24 -interface bridge9
+```
+
+**4. Enable IP forwarding:**
 
 ```bash
 sudo sysctl -w net.inet.ip.forwarding=1
+sudo sysctl -w net.inet.icmp.bmcastecho=1
 ```
 
-**4. Find your internet interface:**
+**5. Detect your internet interface and load the NAT rule:**
 
 ```bash
-route get default | grep interface
-# Example output:  interface: en0
+WAN_IF=$(route get default | awk '/interface:/ {print $2}')
+echo "Internet interface: $WAN_IF"   # usually en0 (Wi-Fi) or en1 (Ethernet)
 ```
 
-**5. Set up NAT with pf** (replace `en0` with your interface):
+**6. Load the NAT rule with pf:**
 
 ```bash
-echo "nat on en0 from 192.168.122.0/24 to any -> (en0)" | sudo pfctl -N -f -
-sudo pfctl -e
+sudo pfctl -F all 2>/dev/null || true
+echo "nat on $WAN_IF from 192.168.122.0/24 to any -> ($WAN_IF)" | sudo pfctl -f - -e 2>/dev/null || true
 ```
 
-> These are two separate commands: the first loads the NAT rule, the second enables pf. If pf is already enabled the second command will print an error — ignore it.
+Verify the rule is loaded:
 
-In GNS3, when adding the Cloud node, select `bridge9` (not `virbr0`) as the interface.
+```bash
+sudo pfctl -s nat
+# Expected: nat on en0 inet from 192.168.122.0/24 to any -> (en0) round-robin
+```
 
-> **Note**: a convenience script that runs all of Step 8 in one command will be published on the course GitHub repository at the end of the session.
+**7. Configure the Cloud node in GNS3:**
+
+- Add a **Cloud** node to the canvas
+- Right-click → **Configure** → check **Show special ethernet interfaces**
+- Select **`feth1`** (not `bridge9`, not `virbr0`) → **Add** → **OK**
+- Connect the Cloud node to the router's external interface (`FastEthernet0/0`)
+
+> The traffic path is: GNS3 → `feth1` → `feth0` → `bridge9` → `pf NAT` → `en0` → Internet.
+> `feth1` is the GNS3-facing side of the pair; `feth0` is the bridge-facing side.
+
+> **Do NOT assign `bridge9` to the Cloud node** — traffic must enter via `feth1`
+> and cross the feth pair to reach the bridge. Connecting GNS3 directly to `bridge9`
+> will result in a non-functional setup.
+
+All of the above steps are automated in `start_nat_mac.sh`.
 
 ---
 
@@ -227,7 +260,7 @@ In GNS3, when adding the Cloud node, select `bridge9` (not `virbr0`) as the inte
 
 From this point, **follow `01_gns3_setup.md` from Step 3** — first launch wizard, disk images, device templates, topology, VM configuration, and verification are identical.
 
-The only difference: in the Cloud node configuration, select `bridge9` instead of `virbr0`.
+The only difference: in the Cloud node configuration, select **`feth1`** instead of `virbr0`.
 
 ---
 
